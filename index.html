@@ -52,7 +52,7 @@ h1{font-size:clamp(42px,6.5vw,76px);line-height:.99;letter-spacing:-3px;margin:2
 <div class="step"><span class="num">1</span><div><b>Copia tu enlace</b><p>Abre Spotify, elige una playlist y toca Compartir → Copiar enlace.</p></div></div>
 <div class="step"><span class="num">2</span><div><b>Pégalo en SONIX</b><p>Coloca el enlace en el campo de arriba y pulsa “Analizar playlist”.</p></div></div>
 <div class="step"><span class="num">3</span><div><b>Escucha en Spotify</b><p>Usa el reproductor incrustado para escuchar las canciones disponibles según tu cuenta y región.</p></div></div>
-</div><div class="legal"><strong>Sobre las descargas:</strong> Spotify no proporciona un método para descargar las canciones de una playlist como archivos MP3 mediante su enlace. Las descargas sin conexión de Spotify se realizan desde su aplicación con los planes y condiciones correspondientes. SONIX puede enlazar archivos de audio propios o de fuentes que permitan descargarlos legalmente.</div></div>
+</div><div class="legal"><strong>Sobre las descargas:</strong> no es posible convertir enlaces de Spotify en archivos MP3 desde SONIX. Para respetar los derechos de autor, el descargador de abajo funciona con archivos de audio directos que tengas permiso para guardar; las descargas sin conexión de Spotify se hacen desde su aplicación.</div></div>
 <div class="panel"><div id="emptyState" class="playlist-empty"><div><div class="empty-icon">♫</div><h3>Tu playlist te espera</h3><p>Pega un enlace válido de una playlist de Spotify para cargar aquí el reproductor oficial.</p><button class="btn" type="button" id="exampleBtn">Probar con una playlist de ejemplo</button></div></div><div class="result" id="result"><h3>♫ Tu playlist de Spotify</h3><iframe id="spotifyEmbed" class="embed" title="Reproductor de Spotify" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe><p class="notice">Si el reproductor no aparece, verifica que el enlace sea público e inténtalo de nuevo.</p></div></div>
 </div>
 </section>
@@ -67,6 +67,17 @@ embed.src='https://open.spotify.com/embed/playlist/'+encodeURIComponent(id)+'?ut
 function showToast(msg,error){toast.textContent=msg;toast.className='toast show '+(error?'error':'success')}
 form.addEventListener('submit',e=>{e.preventDefault();loadPlaylist(input.value)});
 document.getElementById('exampleBtn').addEventListener('click',()=>{input.value='https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M';loadPlaylist(input.value)});
+document.getElementById('audioForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const field=document.getElementById('audioUrl'), out=document.getElementById('audioResult');
+ let url;
+ try{url=new URL(field.value.trim())}catch(err){out.textContent='Escribe un enlace válido.';out.className='toast show error';return}
+ if(!['http:','https:'].includes(url.protocol)){out.textContent='Por seguridad, solo se aceptan enlaces http o https.';out.className='toast show error';return}
+ if(/(^|\\.)spotify\\.com$/i.test(url.hostname)||/spotify/i.test(url.hostname)){out.textContent='Los enlaces de Spotify no son archivos de audio descargables. Usa un enlace directo a un archivo que tengas permiso para descargar.';out.className='toast show error';return}
+ const a=document.createElement('a');a.href=url.href;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Abrir archivo de audio';a.className='btn';a.style.display='inline-block';a.style.marginTop='10px';
+ out.replaceChildren(document.createTextNode('Enlace listo. Si el sitio permite descargar este archivo, podrás guardarlo desde la página que se abra. '),a);
+ out.className='toast show success';
+});
 </script>
 </body>
 </html>
