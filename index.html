@@ -74,8 +74,33 @@ document.getElementById('audioForm').addEventListener('submit',e=>{
  try{url=new URL(field.value.trim())}catch(err){out.textContent='Escribe un enlace válido.';out.className='toast show error';return}
  if(!['http:','https:'].includes(url.protocol)){out.textContent='Por seguridad, solo se aceptan enlaces http o https.';out.className='toast show error';return}
  if(/(^|\\.)spotify\\.com$/i.test(url.hostname)||/spotify/i.test(url.hostname)){out.textContent='Los enlaces de Spotify no son archivos de audio descargables. Usa un enlace directo a un archivo que tengas permiso para descargar.';out.className='toast show error';return}
- const a=document.createElement('a');a.href=url.href;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Abrir archivo de audio';a.className='btn';a.style.display='inline-block';a.style.marginTop='10px';
- out.replaceChildren(document.createTextNode('Enlace listo. Si el sitio permite descargar este archivo, podrás guardarlo desde la página que se abra. '),a);
+ out.replaceChildren();
+ const msg=document.createElement('div');
+ msg.textContent='Enlace validado. Pulsa el botón para intentar guardar el archivo. El servidor debe permitir el acceso desde SONIX.';
+ out.appendChild(msg);
+ const a=document.createElement('button');a.type='button';a.textContent='⬇ DESCARGAR AUDIO';a.className='btn';a.style.display='inline-block';a.style.marginTop='12px';
+ a.addEventListener('click',async()=>{
+   a.disabled=true;a.textContent='Preparando descarga…';
+   try{
+     const response=await fetch(url.href,{mode:'cors'});
+     if(!response.ok)throw new Error('HTTP '+response.status);
+     const blob=await response.blob();
+     if(!blob.size)throw new Error('empty');
+     const objectUrl=URL.createObjectURL(blob);
+     const download=document.createElement('a');download.href=objectUrl;
+     const pathname=url.pathname.split('/').filter(Boolean).pop();
+     download.download=pathname&&pathname.includes('.')?decodeURIComponent(pathname):'sonix-audio';
+     document.body.appendChild(download);download.click();download.remove();
+     setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
+     a.textContent='✓ DESCARGA INICIADA';
+   }catch(err){
+     a.disabled=false;a.textContent='↗ ABRIR ARCHIVO';
+     a.onclick=null;
+     a.addEventListener('click',()=>window.open(url.href,'_blank','noopener,noreferrer'),{once:true});
+     msg.textContent='Este servidor bloquea la descarga directa desde SONIX. Usa el botón para abrir el archivo; si el sitio ofrece una opción de descarga, podrás guardarlo allí.';
+   }
+ });
+ out.appendChild(a);
  out.className='toast show success';
 });
 </script>
