@@ -79,7 +79,9 @@ document.getElementById('audioForm').addEventListener('submit',e=>{
  msg.textContent='Enlace validado. Pulsa el botón para intentar guardar el archivo. El servidor debe permitir el acceso desde SONIX.';
  out.appendChild(msg);
  const a=document.createElement('button');a.type='button';a.textContent='⬇ DESCARGAR AUDIO';a.className='btn';a.style.display='inline-block';a.style.marginTop='12px';
+ let fallback=false;
  a.addEventListener('click',async()=>{
+   if(fallback){window.open(url.href,'_blank','noopener,noreferrer');return;}
    a.disabled=true;a.textContent='Preparando descarga…';
    try{
      const response=await fetch(url.href,{mode:'cors'});
@@ -94,9 +96,7 @@ document.getElementById('audioForm').addEventListener('submit',e=>{
      setTimeout(()=>URL.revokeObjectURL(objectUrl),60000);
      a.textContent='✓ DESCARGA INICIADA';
    }catch(err){
-     a.disabled=false;a.textContent='↗ ABRIR ARCHIVO';
-     a.onclick=null;
-     a.addEventListener('click',()=>window.open(url.href,'_blank','noopener,noreferrer'),{once:true});
+     a.disabled=false;a.textContent='↗ ABRIR ARCHIVO';fallback=true;
      msg.textContent='Este servidor bloquea la descarga directa desde SONIX. Usa el botón para abrir el archivo; si el sitio ofrece una opción de descarga, podrás guardarlo allí.';
    }
  });
